@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Sistemas Lineales n×n</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Sistemas Lineales n×n</h1>
+    <div class="input-panel">
+      <label for="size">Tamaño n:</label>
+      <input type="number" id="size" min="2" max="10" value="3">
+      <button id="generate">Generar matriz</button>
+      <br><br>
+      <div id="matrix-input"></div>
+      <br>
+      <label for="method">Método:</label>
+      <select id="method">
+        <option value="gauss">Gauss</option>
+        <option value="gauss-jordan">Gauss-Jordan</option>
+        <option value="lu">LU</option>
+        <option value="thomas">Thomas</option>
+      </select>
+      <button id="solve">Resolver</button>
+      <button id="clear">Limpiar</button>
+    </div>
+    <div class="output-panel">
+      <h2>Resultados</h2>
+      <div id="error" class="error"></div>
+      <div id="steps" class="steps"></div>
+      <div id="solution" class="solution"></div>
+      <button id="export" style="display:none;">Exportar pasos</button>
+    </div>
+  </div>
+  <script src="sistemas_lineales_front.js"></script>
+</body>
+</html>
