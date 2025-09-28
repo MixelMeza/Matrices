@@ -125,8 +125,32 @@ body {
   margin-bottom: 10px;
   box-shadow: 0 1px 4px rgba(30,64,175,0.04);
 }
-.steps div {
-  margin-bottom: 8px;
+.paso-block {
+  margin-bottom: 18px;
+  padding: 12px 10px 10px 10px;
+  border-radius: 8px;
+  background: #f6faff;
+  border: 1px solid #e3e8f0;
+  box-shadow: 0 1px 2px rgba(30,64,175,0.04);
+}
+.paso-titulo {
+  color: #1e40af;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.paso-matriz {
+  margin: 8px 0 0 0;
+}
+.paso-vector {
+  margin: 10px 0 0 0;
+  padding: 8px 12px;
+  background: #e3f0ff;
+  border-radius: 6px;
+  color: #0a6;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 1.08rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 2px rgba(30,64,175,0.03);
 }
 .solution {
   margin-top: 10px;

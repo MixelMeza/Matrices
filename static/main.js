@@ -82,17 +82,53 @@ document.getElementById('solve').onclick = async function() {
   stepsDiv.innerHTML = '<div style="color:#1e40af;">Resolviendo...</div>';
   solDiv.innerHTML = '';
   try {
+    const metodo = document.getElementById('method').value;
     let resp = await fetch('/api/solve', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({A, b})
+      body: JSON.stringify({A, b, metodo})
     });
     let data = await resp.json();
     stepsDiv.innerHTML = '';
     (data.pasos||[]).forEach((p,i) => {
-      let pasoHtml = `<div><b>Paso ${i+1}:</b> ${p.descripcion}`;
-      if (p.matriz) pasoHtml += '<br>' + p.matriz.map(fila => fila.join(' | ')).join('<br>');
-      pasoHtml += '</div><hr>';
+      let pasoHtml = `<div class="paso-block"><div class="paso-titulo"><b>Paso ${i+1}:</b> ${p.descripcion}</div>`;
+      if (p.matriz) {
+        pasoHtml += '<div class="paso-matriz"><table class="matrix-table">';
+        p.matriz.forEach(fila => {
+          pasoHtml += '<tr>' + fila.map(val => `<td>${val}</td>`).join('') + '</tr>';
+        });
+        pasoHtml += '</table></div>';
+      }
+      if (p.vector) {
+        pasoHtml += '<div class="paso-vector">[' + p.vector.join(', ') + ']</div>';
+      }
+      if (p.sustitucion) {
+        pasoHtml += `<div class="paso-sustitucion" style="color:#0a7b83;margin:4px 0 0 8px;">${p.sustitucion}</div>`;
+      }
+      if (p.formulas) {
+        pasoHtml += '<div class="paso-formulas" style="margin:4px 0 0 8px;">';
+        p.formulas.forEach(f=>{
+          pasoHtml += `<div style="font-family:monospace;font-size:0.98em;">${f}</div>`;
+        });
+        pasoHtml += '</div>';
+      }
+      if (p.L || p.U) {
+        if (p.L) {
+          pasoHtml += '<div class="paso-matriz"><b>L:</b><table class="matrix-table">';
+          p.L.forEach(fila => {
+            pasoHtml += '<tr>' + fila.map(val => `<td>${val}</td>`).join('') + '</tr>';
+          });
+          pasoHtml += '</table></div>';
+        }
+        if (p.U) {
+          pasoHtml += '<div class="paso-matriz"><b>U:</b><table class="matrix-table">';
+          p.U.forEach(fila => {
+            pasoHtml += '<tr>' + fila.map(val => `<td>${val}</td>`).join('') + '</tr>';
+          });
+          pasoHtml += '</table></div>';
+        }
+      }
+      pasoHtml += '</div>';
       stepsDiv.innerHTML += pasoHtml;
     });
     let solHtml = '<b>Solución:</b><br><table class="matrix-table"><tr>';
@@ -106,9 +142,10 @@ document.getElementById('solve').onclick = async function() {
   }
 }
 
+
 document.getElementById('clear').onclick = function() {
   document.getElementById('matrix-input').innerHTML = '';
   document.getElementById('steps').innerHTML = '';
   document.getElementById('solution').innerHTML = '';
   document.getElementById('input-warning').textContent = '';
-}
+};
