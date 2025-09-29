@@ -43,6 +43,9 @@ def jacobi(A, b, max_iter=100, tol=1e-10):
     A = [[float(x) for x in fila] for fila in A]
     b = [float(x) for x in b]
     x = [0.0]*n
+    # Tabla de iteraciones: guardamos la evolución de las variables en cada iteración
+    tabla = []
+    tabla.append({'iter': 0, 'values': [f'{v:.12f}' for v in x], 'note': 'Inicial'})
     for it in range(1, max_iter+1):
         x_new = [0.0]*n
         formulas = []
@@ -50,16 +53,28 @@ def jacobi(A, b, max_iter=100, tol=1e-10):
             s = sum(A[i][j]*x[j] for j in range(n) if j != i)
             x_new[i] = (b[i] - s) / A[i][i]
             formulas.append(f"x{i+1} = (b[{i+1}] - suma) / A[{i+1},{i+1}] = ({b[i]:.4f} - {s:.4f}) / {A[i][i]:.4f} = {x_new[i]:.8f}")
+
+        # calcular diffs y máximo cambio para esta iteración
+        diffs = [abs(x_new[i] - x[i]) for i in range(n)]
+        max_diff = max(diffs) if diffs else 0.0
+
         pasos.append({
             'descripcion': f'Iteración {it}',
             'vector': [f'{v:.12f}' for v in x_new],
-            'formulas': formulas
+            'formulas': formulas,
         })
-        if all(abs(x_new[i]-x[i]) < tol for i in range(n)):
+
+        tabla.append({'iter': it, 'values': [f'{v:.12f}' for v in x_new], 'diffs': [f'{d:.12e}' for d in diffs], 'max_diff': f'{max_diff:.12e}'})
+
+        if all(d < tol for d in diffs):
             pasos.append({'descripcion': f'Convergió en {it} iteraciones', 'vector': [f'{xi:.12f}' for xi in x_new]})
+            pasos.append({'descripcion': 'Tabla de iteraciones', 'tabla': tabla})
             return pasos, [f'{xi:.12f}' for xi in x_new]
+
         x = x_new
+
     pasos.append({'descripcion': f'No convergió tras {max_iter} iteraciones', 'vector': [f'{v:.12f}' for v in x_new]})
+    pasos.append({'descripcion': 'Tabla de iteraciones', 'tabla': tabla})
     return pasos, [f'{xi:.12f}' for xi in x_new]
 
 def gauss_seidel(A, b, max_iter=100, tol=1e-10):
@@ -68,25 +83,38 @@ def gauss_seidel(A, b, max_iter=100, tol=1e-10):
     A = [[float(x) for x in fila] for fila in A]
     b = [float(x) for x in b]
     x = [0.0]*n
+    # Tabla de iteraciones para Gauss-Seidel (valores se actualizan en cada paso)
+    tabla = []
+    tabla.append({'iter': 0, 'values': [f'{v:.12f}' for v in x], 'note': 'Inicial'})
     for it in range(1, max_iter+1):
-        x_new = x.copy()
+        x_old = x.copy()
         formulas = []
         for i in range(n):
-            s1 = sum(A[i][j]*x_new[j] for j in range(i))
-            s2 = sum(A[i][j]*x[j] for j in range(i+1, n))
-            x_new[i] = (b[i] - s1 - s2) / A[i][i]
-            formulas.append(f"x{i+1} = (b[{i+1}] - suma1 - suma2) / A[{i+1},{i+1}] = ({b[i]:.4f} - {s1:.4f} - {s2:.4f}) / {A[i][i]:.4f} = {x_new[i]:.8f}")
+            s1 = sum(A[i][j]*x[j] for j in range(i))
+            s2 = sum(A[i][j]*x_old[j] for j in range(i+1, n))
+            # aquí x[j] ya contiene los valores más recientes para j < i (Gauss-Seidel)
+            x[i] = (b[i] - s1 - s2) / A[i][i]
+            formulas.append(f"x{i+1} = (b[{i+1}] - suma1 - suma2) / A[{i+1},{i+1}] = ({b[i]:.4f} - {s1:.4f} - {s2:.4f}) / {A[i][i]:.4f} = {x[i]:.8f}")
+
+        diffs = [abs(x[i] - x_old[i]) for i in range(n)]
+        max_diff = max(diffs) if diffs else 0.0
+
         pasos.append({
             'descripcion': f'Iteración {it}',
-            'vector': [f'{v:.12f}' for v in x_new],
+            'vector': [f'{v:.12f}' for v in x],
             'formulas': formulas
         })
-        if all(abs(x_new[i]-x[i]) < tol for i in range(n)):
-            pasos.append({'descripcion': f'Convergió en {it} iteraciones', 'vector': [f'{xi:.12f}' for xi in x_new]})
-            return pasos, [f'{xi:.12f}' for xi in x_new]
-        x = x_new
-    pasos.append({'descripcion': f'No convergió tras {max_iter} iteraciones', 'vector': [f'{v:.12f}' for v in x_new]})
-    return pasos, [f'{xi:.12f}' for xi in x_new]
+
+        tabla.append({'iter': it, 'values': [f'{v:.12f}' for v in x], 'diffs': [f'{d:.12e}' for d in diffs], 'max_diff': f'{max_diff:.12e}'})
+
+        if all(d < tol for d in diffs):
+            pasos.append({'descripcion': f'Convergió en {it} iteraciones', 'vector': [f'{xi:.12f}' for xi in x]})
+            pasos.append({'descripcion': 'Tabla de iteraciones', 'tabla': tabla})
+            return pasos, [f'{xi:.12f}' for xi in x]
+
+    pasos.append({'descripcion': f'No convergió tras {max_iter} iteraciones', 'vector': [f'{v:.12f}' for v in x]})
+    pasos.append({'descripcion': 'Tabla de iteraciones', 'tabla': tabla})
+    return pasos, [f'{xi:.12f}' for xi in x]
 from flask import Flask, render_template, request, jsonify
 from fractions import Fraction
 from flask_cors import CORS
