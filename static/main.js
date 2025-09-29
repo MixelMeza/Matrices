@@ -102,6 +102,16 @@ document.getElementById('solve').onclick = async function() {
       if (p.vector) {
         pasoHtml += '<div class="paso-vector">[' + p.vector.join(', ') + ']</div>';
       }
+      // Iteration-style entries may use 'values' and 'errors'
+      if (p.values) {
+        pasoHtml += '<div class="paso-values">Valores: [' + p.values.join(', ') + ']</div>';
+      }
+      if (p.errors) {
+        pasoHtml += '<div class="paso-errors">Errores: [' + p.errors.join(', ') + ']</div>';
+      }
+      if (p.max_diff) {
+        pasoHtml += '<div class="paso-maxdiff">Max diff: ' + p.max_diff + '</div>';
+      }
       if (p.sustitucion) {
         pasoHtml += `<div class="paso-sustitucion" style="color:#0a7b83;margin:4px 0 0 8px;">${p.sustitucion}</div>`;
       }
@@ -131,12 +141,42 @@ document.getElementById('solve').onclick = async function() {
       pasoHtml += '</div>';
       stepsDiv.innerHTML += pasoHtml;
     });
-    let solHtml = '<b>Solución:</b><br><table class="matrix-table"><tr>';
-    for (let i=0; i<data.n; i++) solHtml += `<th>x${i+1}</th>`;
-    solHtml += '</tr><tr>';
-    (data.solucion||[]).forEach(v=>{solHtml+=`<td>${v}</td>`;});
-    solHtml += '</tr></table>';
-    solDiv.innerHTML = solHtml;
+      // Si la respuesta incluye una 'tabla' (Jacobi / Gauss-Seidel), renderizarla como tabla
+      const tablaPaso = (data.pasos||[]).find(p => p.tabla);
+      if (tablaPaso && Array.isArray(tablaPaso.tabla)) {
+        // construir tabla de iteraciones: columnas = Iter, x1..xn, Errores (por variable), MaxDiff
+        const filas = tablaPaso.tabla;
+        let tbl = '<b>Tabla de iteraciones:</b><br><div style="overflow:auto"><table class="matrix-table"><thead><tr><th>iter</th>';
+        // intentar obtener número de variables buscando la primera fila con 'values'
+        const firstValues = filas.find(r => Array.isArray(r.values));
+        const varsCount = firstValues ? firstValues.values.length : data.n;
+        for (let i=0;i<varsCount;i++) tbl += `<th>x${i+1}</th>`;
+        // agregar columnas de errores (mostramos como columna única 'errores' y max_diff)
+        tbl += '<th>errores</th><th>max_diff</th></tr></thead><tbody>';
+        filas.forEach(r=>{
+          // r puede venir en varias formas; normalizar
+          const iter = r.iter !== undefined ? r.iter : (r.descripcion || '');
+          const values = Array.isArray(r.values) ? r.values : (r.vector ? r.vector : Array(varsCount).fill(''));
+          const errors = Array.isArray(r.errors) ? r.errors : [];
+          const maxd = r.max_diff !== undefined ? r.max_diff : '';
+          tbl += '<tr>';
+          tbl += `<td>${iter}</td>`;
+          for (let k=0;k<varsCount;k++) tbl += `<td>${values[k] !== undefined ? values[k] : ''}</td>`;
+          tbl += `<td>${errors.length? errors.join(', ') : ''}</td>`;
+          tbl += `<td>${maxd}</td>`;
+          tbl += '</tr>';
+        });
+        tbl += '</tbody></table></div>';
+        solDiv.innerHTML = tbl;
+      } else {
+        // comportamiento por defecto: mostrar solución vectorial (cuando exista)
+        let solHtml = '<b>Solución:</b><br><table class="matrix-table"><tr>';
+        for (let i=0; i<data.n; i++) solHtml += `<th>x${i+1}</th>`;
+        solHtml += '</tr><tr>';
+        (data.solucion||[]).forEach(v=>{solHtml+=`<td>${v}</td>`;});
+        solHtml += '</tr></table>';
+        solDiv.innerHTML = solHtml;
+      }
   } catch(e) {
     stepsDiv.innerHTML = '<span style="color:#d32f2f;">Error de conexión</span>';
   }
