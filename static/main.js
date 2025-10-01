@@ -26,6 +26,10 @@ document.getElementById('generate').onclick = function() {
         input.step = 'any';
         input.id = `a_${i}_${j}`;
         input.value = i === j ? 1 : 0;
+        // Selecciona el valor automáticamente al hacer foco/clic
+        input.addEventListener('focus', function(e) {
+          e.target.select();
+        });
         td.appendChild(input);
         tr.appendChild(td);
       }
@@ -35,6 +39,10 @@ document.getElementById('generate').onclick = function() {
       inputB.step = 'any';
       inputB.id = `b_${i}`;
       inputB.value = 0;
+      // Selecciona el valor automáticamente al hacer foco/clic
+      inputB.addEventListener('focus', function(e) {
+        e.target.select();
+      });
       tdB.appendChild(inputB);
       tr.appendChild(tdB);
       tbody.appendChild(tr);

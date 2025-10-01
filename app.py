@@ -52,7 +52,7 @@ def jacobi(A, b, max_iter=100, tol=1e-4):
             s = sum(A[i][j]*x[j] for j in range(n) if j != i)
             x_new[i] = (b[i] - s) / A[i][i]
         # calcular error por variable y máximo cambio para esta iteración
-        errors = [abs(x_new[i] - x[i]) for i in range(n)]
+        errors = [abs((x_new[i] - x[i]) / x_new[i]) if x_new[i] != 0 else 0.0 for i in range(n)]
         max_diff = max(errors) if errors else 0.0
 
         # registrar en pasos y en la tabla (ambos contienen la misma info por iteración)
@@ -60,8 +60,8 @@ def jacobi(A, b, max_iter=100, tol=1e-4):
             'descripcion': f'Iteración {it}',
             'iter': it,
             'values': [f'{v:.12f}' for v in x_new],
-            'errors': [f'{e:.12e}' for e in errors],
-            'max_diff': f'{max_diff:.12e}'
+            'errors': [f'{e:.8f}' for e in errors],
+            'max_diff': f'{max_diff:.8f}'
         }
         pasos.append(iter_entry)
         tabla.append(iter_entry.copy())
@@ -103,8 +103,8 @@ def gauss_seidel(A, b, max_iter=100, tol=1e-4):
             'descripcion': f'Iteración {it}',
             'iter': it,
             'values': [f'{v:.12f}' for v in x],
-            'errors': [f'{e:.12e}' for e in errors],
-            'max_diff': f'{max_diff:.12e}'
+            'errors': [f'{e:.8f}' for e in errors],
+            'max_diff': f'{max_diff:.8f}'
         }
         pasos.append(iter_entry)
         tabla.append(iter_entry.copy())
